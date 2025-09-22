@@ -80,25 +80,6 @@ This service will:
 
 ---
 
-## 📂 Project Structure (suggested)
-
-```
-auth-service/
-│── src/                  # Source code
-│   ├── controllers/      # REST API controllers
-│   ├── services/         # Business logic (auth, tokens, roles)
-│   ├── models/           # Database models/entities
-│   ├── middlewares/      # Request validation, auth middleware
-│   ├── utils/            # Helpers (hashing, jwt handling)
-│── migrations/           # Database migration scripts
-│── tests/                # Unit & integration tests
-│── docker-compose.yml    # Local setup (Postgres, Redis, API)
-│── Dockerfile            # Container for the service
-│── README.md             # Project documentation
-```
-
----
-
 ## 🧪 Example API Endpoints
 
 | Method | Endpoint             | Description              | Auth Required |
