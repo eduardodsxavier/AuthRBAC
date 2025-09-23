@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import com.service.AuthRBAC.enums.Role;
+
 @Entity
 @Table
 public class Users {
