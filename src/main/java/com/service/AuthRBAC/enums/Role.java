@@ -1,4 +1,4 @@
-package com.service.AuthRBAC.model;
+package com.service.AuthRBAC.enums;
 
 public enum Role {
     viewer,
