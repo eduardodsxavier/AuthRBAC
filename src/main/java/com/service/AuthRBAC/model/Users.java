@@ -23,14 +23,14 @@ public class Users {
     @Column(nullable = false)
     private Role role;
 
-    private boolean disabled;
+    private boolean enabled;
 
-    public Users(Long id, String name, String password, Role role, boolean disabled) {
+    public Users(Long id, String name, String password, Role role, boolean enabled) {
         this.id = id;
         this.name = name;
         this.password = password; 
         this.role = role;
-        this.disabled = disabled;
+        this.enabled = enabled;
     }
 
     public void setId(Long id) {
@@ -65,11 +65,11 @@ public class Users {
         return role;
     }
 
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public boolean disabled() {
-        return disabled;
+    public boolean enabled() {
+        return enabled;
     }
 }
