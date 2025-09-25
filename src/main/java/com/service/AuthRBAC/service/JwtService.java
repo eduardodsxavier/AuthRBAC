@@ -12,18 +12,20 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import com.service.AuthRBAC.security.UserDetailsImpl;
+
 @Service
 public class JwtService {
 
     private static final String SECRET_KEY = "change to enviroment variable"; 
     private static final String ISSUER = "AUTHRBAC"; 
 
-    public String generateToken(String username) {
+    public String generateToken(UserDetailsImpl user) {
         return JWT.create()
             .withIssuer(ISSUER)
             .withIssuedAt(creationDate())
             .withExpiresAt(expirationDate())
-            .withSubject(username)
+            .withSubject(user.getUsername())
             .sign(Algorithm.HMAC256(SECRET_KEY));
     }
 

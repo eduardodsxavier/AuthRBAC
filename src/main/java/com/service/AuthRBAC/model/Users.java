@@ -2,6 +2,10 @@ package com.service.AuthRBAC.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -12,6 +16,7 @@ import com.service.AuthRBAC.enums.Role;
 public class Users {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -21,9 +26,12 @@ public class Users {
     private String password;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     private boolean enabled;
+
+    public Users() {};
 
     public Users(Long id, String name, String password, Role role, boolean enabled) {
         this.id = id;
