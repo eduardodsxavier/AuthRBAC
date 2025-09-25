@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.service.AuthRBAC.model.Users;
 import com.service.AuthRBAC.enums.Role;
@@ -25,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthService {
 
     @Autowired
-    private SecurityConfig securityConfig;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UsersRepository repository;
@@ -49,8 +50,8 @@ public class AuthService {
     public AccessTokenDto register(RegisterDto registerInfo) {
         Users user = new Users();
         user.setName(registerInfo.username());
-        user.setPassword(securityConfig.passwordEncoder().encode(registerInfo.password()));
-        user.setRole(Role.viewer);
+        user.setPassword(passwordEncoder.encode(registerInfo.password()));
+        user.setRole(Role.admin);
         user.setEnabled(true);
         
         repository.save(user);

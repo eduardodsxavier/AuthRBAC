@@ -22,11 +22,31 @@ public class SecurityConfig {
     @Autowired
     private UserAuthenticationFilter userAuthenticationFilter;
 
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
+        "/auth/login",
+        "/auth/register",
+        "/auth/refresh",
+    };
+
+    public static final String[] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
+        "/auth/logout",
+        "/users/me",
+    };
+
+    public static final String[] ENDPOINTS_ADMIN = {
+        "/users/assign-role",
+        "/admin/audit-logs",
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
+                    .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_REQUIRED).authenticated()
+                    .requestMatchers(ENDPOINTS_ADMIN).hasRole("admin")
+                    .anyRequest().permitAll())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .formLogin(form -> form.disable())
             .addFilterBefore(userAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

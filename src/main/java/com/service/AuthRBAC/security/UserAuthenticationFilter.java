@@ -18,6 +18,7 @@ import com.service.AuthRBAC.repository.UsersRepository;
 import com.service.AuthRBAC.model.Users;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class UserAuthenticationFilter extends OncePerRequestFilter {
@@ -44,6 +45,6 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
     }
     
     private boolean endpointNotPublic(HttpServletRequest request) {
-        return false;
+        return !Arrays.asList(SecurityConfig.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).contains(request.getRequestURI());
     }
 }
