@@ -15,6 +15,8 @@ import com.service.AuthRBAC.dtos.AssignRoleDto;
 import jakarta.servlet.http.HttpServletRequest;
 import com.service.AuthRBAC.service.AuthService;
 
+import com.service.AuthRBAC.exception.InvalidRoleException;
+
 @RestController
 @RequestMapping("/users")
 public class UsersController {
@@ -30,7 +32,11 @@ public class UsersController {
 
     @PostMapping("/assign-role")
     public ResponseEntity<Void> assigbRole(@RequestBody AssignRoleDto newRoleInfo) {
-        service.assignRole(newRoleInfo);
-        return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            service.assignRole(newRoleInfo);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            throw new InvalidRoleException(newRoleInfo.role().toString());
+        }
     }
 }

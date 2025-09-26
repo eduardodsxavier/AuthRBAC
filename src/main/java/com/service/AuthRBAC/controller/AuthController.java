@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.dtos.RegisterDto;
+import com.service.AuthRBAC.exception.UserAlreadyExistException;
+import com.service.AuthRBAC.exception.InvalidCredentialsException;
 import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.AccessTokenDto;
 import com.service.AuthRBAC.service.AuthService;
@@ -22,16 +24,24 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AccessTokenDto> register(@RequestBody RegisterDto registerInfo)  {
-        AccessTokenDto token = service.register(registerInfo);
+        try {
+            AccessTokenDto token = service.register(registerInfo);
 
-        return new ResponseEntity<>(token, HttpStatus.OK);
+            return new ResponseEntity<>(token, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new UserAlreadyExistException(registerInfo.username());
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<AccessTokenDto> login(@RequestBody LoginDto loginInfo) {
-        AccessTokenDto token = service.authenticate(loginInfo);
+        try {
+            AccessTokenDto token = service.authenticate(loginInfo);
 
-        return new ResponseEntity<>(token, HttpStatus.OK);
+            return new ResponseEntity<>(token, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new InvalidCredentialsException();
+        }
     }
 
     @PostMapping("/refresh")
