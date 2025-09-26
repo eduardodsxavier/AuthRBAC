@@ -8,7 +8,6 @@ import com.service.AuthRBAC.dtos.AccessTokenDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
 import com.service.AuthRBAC.dtos.UserInfoDto;
-import com.service.AuthRBAC.security.SecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -73,9 +72,9 @@ public class AuthService {
         return new UserInfoDto(user.id(), user.name(), user.role());
     }
 
-    public void assignRole(AssignRoleDto info) {
-        Users user = repository.findById(info.userId()).get();
-        user.setRole(info.role());
+    public void assignRole(AssignRoleDto newRoleInfo) {
+        Users user = repository.findById(newRoleInfo.userId()).get();
+        user.setRole(newRoleInfo.role());
 
         repository.save(user);
     }

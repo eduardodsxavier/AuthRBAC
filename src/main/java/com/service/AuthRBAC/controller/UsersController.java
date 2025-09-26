@@ -29,8 +29,8 @@ public class UsersController {
     }
 
     @PostMapping("/assign-role")
-    public ResponseEntity<Void> assigbRole(@RequestBody AssignRoleDto info) {
-        service.assignRole(info);
+    public ResponseEntity<Void> assigbRole(@RequestBody AssignRoleDto newRoleInfo) {
+        service.assignRole(newRoleInfo);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -51,7 +51,7 @@ public class SecurityConfig {
             .formLogin(form -> form.disable())
             .addFilterBefore(userAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
-    }
+   }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
