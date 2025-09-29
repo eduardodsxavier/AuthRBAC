@@ -12,8 +12,12 @@ import com.service.AuthRBAC.dtos.RegisterDto;
 import com.service.AuthRBAC.exception.UserAlreadyExistException;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
 import com.service.AuthRBAC.dtos.LoginDto;
+import com.service.AuthRBAC.dtos.TokenDto;
 import com.service.AuthRBAC.dtos.AccessTokenDto;
 import com.service.AuthRBAC.service.AuthService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,22 +27,30 @@ public class AuthController {
     private AuthService service; 
 
     @PostMapping("/register")
-    public ResponseEntity<AccessTokenDto> register(@RequestBody RegisterDto registerInfo)  {
+    public ResponseEntity<AccessTokenDto> register(@RequestBody RegisterDto registerInfo, HttpServletResponse response)  {
         try {
-            AccessTokenDto token = service.register(registerInfo);
+            TokenDto token = service.register(registerInfo);
 
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
             throw new UserAlreadyExistException(registerInfo.username());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenDto> login(@RequestBody LoginDto loginInfo) {
+    public ResponseEntity<AccessTokenDto> login(@RequestBody LoginDto loginInfo, HttpServletResponse response) {
         try {
-            AccessTokenDto token = service.authenticate(loginInfo);
+            TokenDto token = service.authenticate(loginInfo);
 
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
             throw new InvalidCredentialsException();
         }

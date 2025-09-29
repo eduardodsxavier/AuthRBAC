@@ -4,8 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.RegisterDto;
-import com.service.AuthRBAC.dtos.AccessTokenDto;
-import com.service.AuthRBAC.dtos.RefreshTokenDto;
+import com.service.AuthRBAC.dtos.TokenDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +35,17 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public AccessTokenDto authenticate(LoginDto loginInfo) {
+    public TokenDto authenticate(LoginDto loginInfo) {
         UsernamePasswordAuthenticationToken userAuthenticationToken = new UsernamePasswordAuthenticationToken(loginInfo.username(), loginInfo.password());
 
         Authentication authentication = manager.authenticate(userAuthenticationToken); 
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        return new AccessTokenDto(jwtService.generateToken(userDetails));
+        return new TokenDto(jwtService.generateToken(userDetails), "");
     }
 
-    public AccessTokenDto register(RegisterDto registerInfo) {
+    public TokenDto register(RegisterDto registerInfo) {
         Users user = new Users();
         user.setName(registerInfo.username());
         user.setPassword(passwordEncoder.encode(registerInfo.password()));
@@ -58,8 +57,8 @@ public class AuthService {
         return authenticate(new LoginDto(registerInfo.username(), registerInfo.password()));
     }
 
-    public AccessTokenDto refresh(RefreshTokenDto refreshToken) {
-        return new AccessTokenDto("");
+    public TokenDto refresh(TokenDto refreshToken) {
+        return new TokenDto("", "");
     }
 
     public void logout() {
