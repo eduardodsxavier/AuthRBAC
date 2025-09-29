@@ -1,5 +1,5 @@
 services:
-  AuthRBAC_db:
+  postgres:
     image: postgres:16
     container_name: 'authRBAC-db'
     environment:
@@ -8,3 +8,9 @@ services:
       POSTGRES_PASSWORD: mypassword
     ports:
       - "15432:5432"
+  redis:
+    image: redis:7.2
+    container_name: 'authRBAC-redis'
+    ports:
+      - "6379:6379"
+      

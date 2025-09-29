@@ -2,11 +2,14 @@ package com.service.AuthRBAC.model;
 
 import java.io.Serializable;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+
 
 @RedisHash("Token")
 public class RefreshToken implements Serializable {
 
+    @Id
     private String sessionId;
 
     private String token;
