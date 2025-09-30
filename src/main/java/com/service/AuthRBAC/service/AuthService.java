@@ -2,7 +2,14 @@ package com.service.AuthRBAC.service;
 
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
 import com.service.AuthRBAC.dtos.LoginDto;
+import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.RegisterDto;
 import com.service.AuthRBAC.dtos.TokenDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
@@ -14,7 +21,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.service.AuthRBAC.model.Users;
+import com.service.AuthRBAC.model.TokenWhiteList;
+import com.service.AuthRBAC.model.TokenBlackList;
 import com.service.AuthRBAC.enums.Role;
+import com.service.AuthRBAC.exception.InvalidCredentialsException;
+import com.service.AuthRBAC.repository.TokenWhiteListRepository;
+import com.service.AuthRBAC.repository.TokenBlackListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
 import com.service.AuthRBAC.security.UserDetailsImpl;
 
@@ -27,10 +39,16 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UsersRepository repository;
+    private UsersRepository usersRepository;
 
     @Autowired
     private AuthenticationManager manager;
+
+    @Autowired
+    private TokenWhiteListRepository whiteListRepository;
+
+    @Autowired
+    private TokenBlackListRepository blackListRepository;
 
     @Autowired
     private JwtService jwtService;
@@ -42,7 +60,13 @@ public class AuthService {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        return new TokenDto(jwtService.generateToken(userDetails), "");
+        String refreshToken = UUID.randomUUID().toString();
+        String accessToken = jwtService.generateToken(userDetails);
+        Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
+
+        whiteListRepository.save(new TokenWhiteList(refreshToken, accessToken, userDetails.getId(), expireDate));   
+
+        return new TokenDto(accessToken, refreshToken);
     }
 
     public TokenDto register(RegisterDto registerInfo) {
@@ -52,30 +76,62 @@ public class AuthService {
         user.setRole(Role.admin);
         user.setEnabled(true);
         
-        repository.save(user);
+        usersRepository.save(user);
 
         return authenticate(new LoginDto(registerInfo.username(), registerInfo.password()));
     }
 
-    public TokenDto refresh(TokenDto refreshToken) {
-        return new TokenDto("", "");
+    public TokenDto refresh(RefreshTokenDto refreshToken) {
+        Optional<TokenBlackList> securityFault = blackListRepository.findById(refreshToken.token()); 
+        if (securityFault.isPresent()) {
+            Users user = usersRepository.findById(securityFault.get().userId()).get();
+            TokenWhiteList whiteList = whiteListRepository.findByUserId(user.id()).get();
+
+            blackListRepository.save(new TokenBlackList(whiteList.accessToken(), user.id()));
+            whiteListRepository.delete(whiteList);
+
+            throw new InvalidCredentialsException();
+        }
+
+        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.token()).get();
+        whiteListRepository.delete(whiteList);
+
+        if (ZonedDateTime.now(ZoneId.of("GMT-3")).toInstant().isAfter(whiteList.expireDate())) {
+            throw new InvalidCredentialsException();
+        }
+
+        blackListRepository.save(new TokenBlackList(refreshToken.token(), whiteList.userId()));
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(whiteList.userId()).get());
+
+        String newRefreshToken = UUID.randomUUID().toString();
+        String newAccessToken = jwtService.generateToken(userDetails);
+        Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
+
+        whiteListRepository.save(new TokenWhiteList(newRefreshToken, newAccessToken, userDetails.getUser().id(), expireDate));   
+
+        return new TokenDto(newAccessToken, newRefreshToken);
     }
 
-    public void logout() {
+    public void logout(RefreshTokenDto refreshToken) {
+        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.token()).get(); 
+        blackListRepository.save(new TokenBlackList(whiteList.accessToken(), whiteList.userId()));
+
+        whiteListRepository.delete(whiteList);
     }
 
     public UserInfoDto UserInformation(HttpServletRequest request) {
         String username = jwtService.getSubjectFromToken(jwtService.recoveryToken(request));
-        Users user = repository.findByName(username).get();
+        Users user = usersRepository.findByName(username).get();
 
         return new UserInfoDto(user.id(), user.name(), user.role());
     }
 
     public void assignRole(AssignRoleDto newRoleInfo) {
-        Users user = repository.findById(newRoleInfo.userId()).get();
+        Users user = usersRepository.findById(newRoleInfo.userId()).get();
         user.setRole(newRoleInfo.role());
 
-        repository.save(user);
+        usersRepository.save(user);
     }
 
     public void auditLogs() {

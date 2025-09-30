@@ -12,6 +12,7 @@ import com.service.AuthRBAC.dtos.RegisterDto;
 import com.service.AuthRBAC.exception.UserAlreadyExistException;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
 import com.service.AuthRBAC.dtos.LoginDto;
+import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.TokenDto;
 import com.service.AuthRBAC.dtos.AccessTokenDto;
 import com.service.AuthRBAC.service.AuthService;
@@ -57,12 +58,28 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<AccessTokenDto> refresh(@RequestBody RefreshTokenDto refreshToken, HttpServletResponse response) {
+        try {
+            TokenDto token = service.refresh(refreshToken);
+
+            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
+        } catch (Exception e) {
+            throw new InvalidCredentialsException();
+        }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenDto refreshToken) {
+        try {
+            service.logout(refreshToken);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            throw new InvalidCredentialsException();
+        }
     }
 }

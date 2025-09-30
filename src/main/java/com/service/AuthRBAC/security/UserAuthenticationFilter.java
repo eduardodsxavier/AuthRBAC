@@ -14,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.service.AuthRBAC.repository.TokenBlackListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
 import com.service.AuthRBAC.model.Users;
 
@@ -29,11 +30,15 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UsersRepository repository;
 
+    @Autowired
+    private TokenBlackListRepository blackListRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filter) throws ServletException, IOException {
         if(endpointNotPublic(request)) {
             String token = service.recoveryToken(request);
             if (token == null) {throw new RuntimeException("absent token");}
+            if (blackListRepository.findById(token).isPresent()) {throw new RuntimeException("token in the blacklist");}
             String subject = service.getSubjectFromToken(token);
             Users user = repository.findByName(subject).get();
             UserDetailsImpl userDetails = new UserDetailsImpl(user);
