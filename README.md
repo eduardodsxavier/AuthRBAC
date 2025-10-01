@@ -8,7 +8,7 @@ A standalone **Authentication & Authorization** microservice providing user mana
 
 - **User management**: register, login, logout, profile.
 - **Authentication**: short-lived JWT Access Tokens + longer-lived UUID Refresh Tokens.
-- **Token lifecycle**: token rotation and revocation (Redis-backed allowlist/denylist).
+- **Token lifecycle**: token rotation and revocation (Redis-backed allowlist/blocklist).
 - **RBAC**: define roles & permissions; API endpoints protected by role checks (e.g.,`viewer`, `admin`).
 - **Security**: password hashing (argon2 / bcrypt), secure secret injection, rate limiting.
 - **API-first**: Swagger/OpenAPI docs and example requests.

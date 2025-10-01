@@ -8,8 +8,8 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
 
-@RedisHash("whiteList")
-public class TokenWhiteList implements Serializable {
+@RedisHash("allowList")
+public class AllowToken implements Serializable {
 
     @Id
     private String refreshToken;
@@ -21,7 +21,7 @@ public class TokenWhiteList implements Serializable {
 
     private Instant expireDate;
 
-    public TokenWhiteList(String refreshToken, String accessToken, Long userId, Instant expireDate) {
+    public AllowToken(String refreshToken, String accessToken, Long userId, Instant expireDate) {
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
         this.userId = userId;

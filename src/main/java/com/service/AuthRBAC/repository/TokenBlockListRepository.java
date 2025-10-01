@@ -4,8 +4,8 @@ package com.service.AuthRBAC.repository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.service.AuthRBAC.model.TokenBlackList;
+import com.service.AuthRBAC.model.BlockToken;
 
 @Repository
-public interface TokenBlackListRepository extends CrudRepository<TokenBlackList, String> {
+public interface TokenBlockListRepository extends CrudRepository<BlockToken, String> {
 }

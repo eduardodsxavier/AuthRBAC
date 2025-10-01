@@ -22,12 +22,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.service.AuthRBAC.model.Users;
-import com.service.AuthRBAC.model.TokenWhiteList;
-import com.service.AuthRBAC.model.TokenBlackList;
+import com.service.AuthRBAC.model.AllowToken;
+import com.service.AuthRBAC.model.BlockToken;
 import com.service.AuthRBAC.enums.Role;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
-import com.service.AuthRBAC.repository.TokenWhiteListRepository;
-import com.service.AuthRBAC.repository.TokenBlackListRepository;
+import com.service.AuthRBAC.repository.TokenAllowListRepository;
+import com.service.AuthRBAC.repository.TokenBlockListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
 import com.service.AuthRBAC.security.UserDetailsImpl;
 
@@ -47,10 +47,10 @@ public class AuthService {
     private AuthenticationManager manager;
 
     @Autowired
-    private TokenWhiteListRepository whiteListRepository;
+    private TokenAllowListRepository allowListRepository;
 
     @Autowired
-    private TokenBlackListRepository blackListRepository;
+    private TokenBlockListRepository blockListRepository;
 
     @Autowired
     private JwtService jwtService;
@@ -66,7 +66,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(userDetails);
         Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
 
-        whiteListRepository.save(new TokenWhiteList(refreshToken, accessToken, userDetails.getId(), expireDate));   
+        allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), expireDate));   
 
         return new TokenDto(accessToken, refreshToken);
     }
@@ -84,13 +84,13 @@ public class AuthService {
     }
 
     public TokenDto refresh(RefreshTokenDto refreshToken) {
-        Optional<TokenBlackList> securityFault = blackListRepository.findById(refreshToken.refreshToken()); 
+        Optional<BlockToken> securityFault = blockListRepository.findById(refreshToken.refreshToken()); 
         if (securityFault.isPresent()) {
             Users user = usersRepository.findById(securityFault.get().userId()).get();
-            TokenWhiteList whiteList = whiteListRepository.findByUserId(user.id()).get();
+            AllowToken allowToken = allowListRepository.findByUserId(user.id()).get();
 
-            blackListRepository.save(new TokenBlackList(whiteList.accessToken(), user.id()));
-            whiteListRepository.delete(whiteList);
+            blockListRepository.save(new BlockToken(allowToken.accessToken(), user.id()));
+            allowListRepository.delete(allowToken);
 
             throw new InvalidCredentialsException();
         }
@@ -98,31 +98,31 @@ public class AuthService {
 
         System.out.println("3333");
 
-        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.refreshToken()).get();
-        whiteListRepository.delete(whiteList);
+        AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get();
+        allowListRepository.delete(allowToken);
 
-        if (ZonedDateTime.now(ZoneId.of("GMT-3")).toInstant().isAfter(whiteList.expireDate())) {
+        if (ZonedDateTime.now(ZoneId.of("GMT-3")).toInstant().isAfter(allowToken.expireDate())) {
             throw new InvalidCredentialsException();
         }
 
-        blackListRepository.save(new TokenBlackList(refreshToken.refreshToken(), whiteList.userId()));
+        blockListRepository.save(new BlockToken(refreshToken.refreshToken(), allowToken.userId()));
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(whiteList.userId()).get());
+        UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(allowToken.userId()).get());
 
         String newRefreshToken = UUID.randomUUID().toString();
         String newAccessToken = jwtService.generateToken(userDetails);
         Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
 
-        whiteListRepository.save(new TokenWhiteList(newRefreshToken, newAccessToken, userDetails.getUser().id(), expireDate));   
+        allowListRepository.save(new AllowToken(newRefreshToken, newAccessToken, userDetails.getUser().id(), expireDate));   
 
         return new TokenDto(newAccessToken, newRefreshToken);
     }
 
     public void logout(RefreshTokenDto refreshToken) {
-        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.refreshToken()).get(); 
-        blackListRepository.save(new TokenBlackList(whiteList.accessToken(), whiteList.userId()));
+        AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get(); 
+        blockListRepository.save(new BlockToken(allowToken.accessToken(), allowToken.userId()));
 
-        whiteListRepository.delete(whiteList);
+        allowListRepository.delete(allowToken);
     }
 
     public UserInfoDto UserInformation(HttpServletRequest request) {

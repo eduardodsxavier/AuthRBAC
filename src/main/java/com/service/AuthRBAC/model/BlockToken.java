@@ -6,25 +6,25 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 
-@RedisHash("blackList")
-public class TokenBlackList implements Serializable {
+@RedisHash("blockList")
+public class BlockToken implements Serializable {
 
     @Id
-    private String refreshToken;
+    private String token;
 
     private Long userId;
 
-    public TokenBlackList(String refreshToken, Long userId) {
-        this.refreshToken = refreshToken;
+    public BlockToken(String token, Long userId) {
+        this.token = token;
         this.userId = userId;
     }
 
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
+    public void setToken(String refreshToken) {
+        this.token = refreshToken;
     }
 
-    public String refreshToken() {
-        return refreshToken;
+    public String token() {
+        return token;
     }
 
     public void setUserId(Long userId) {
