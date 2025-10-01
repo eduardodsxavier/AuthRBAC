@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: 'authRBAC-db'
+    container_name: 'authRBAC-postgres'
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: myuser
