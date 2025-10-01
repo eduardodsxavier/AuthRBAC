@@ -1,123 +1,172 @@
-
 # 🔐 Authentication & RBAC Service
 
-A standalone **authentication and authorization service** built with modern backend and DevOps practices.
-It provides **user management, secure authentication (JWT/OAuth2), and role-based access control (RBAC)** that can be reused across microservices.
+A standalone **Authentication & Authorization** microservice providing user management, JWT-based authentication, and Role-Based Access Control (RBAC). Designed to be reused by other microservices.
 
 ---
 
-## 📌 Features
+## Features
 
-* **User Authentication**
-
-  * Sign up / Login / Logout
-  * JWT access tokens + refresh tokens
-  * Secure password hashing (bcrypt/argon2)
-* **Role-Based Access Control (RBAC)**
-
-  * Define roles (e.g., `admin`, `editor`, `viewer`)
-  * Assign users to roles
-  * Protect routes based on role permissions
-* **Security Best Practices**
-
-  * Password hashing with salt
-  * Token expiration + refresh
-  * Token revocation (logout)
-  * (Optional) Two-Factor Authentication (2FA)
-* **API-first**
-
-  * REST endpoints for auth and user management
-  * Swagger/OpenAPI documentation
-* **Database Integration**
-
-  * PostgreSQL for persistence (users, roles, sessions, audit logs)
-  * Migration scripts (Flyway/Liquibase)
-* **DevOps Ready**
-
-  * Dockerized for easy deployment
-  * CI pipeline (tests, lint, build)
-  * Secrets managed via environment variables
-  * Metrics (request latency, failed logins) exposed for Prometheus
+- **User management**: register, login, logout, profile.
+- **Authentication**: short-lived JWT Access Tokens + longer-lived UUID Refresh Tokens.
+- **Token lifecycle**: token rotation and revocation (Redis-backed allowlist/denylist).
+- **RBAC**: define roles & permissions; API endpoints protected by role checks (e.g.,`viewer`, `admin`).
+- **Security**: password hashing (argon2 / bcrypt), secure secret injection, rate limiting.
+- **API-first**: Swagger/OpenAPI docs and example requests.
+- **Observability**: Prometheus metrics; Grafana dashboards.
+- **DevOps**: Dockerized, CI via GitHub Actions, DB migrations with Flyway/Liquibase.
 
 ---
 
-## 🏗️ Tech Stack Recommendations
+## 🏗️ Tech Stack 
 
 * **Backend Framework:**
+  * **Spring Boot (Java)**
 
-  * **Spring Boot (Java/Kotlin)** or **Node.js (NestJS/Express)**
 * **Database:**
+  * PostgreSQL 
+  * Redis 
 
-  * PostgreSQL (preferred)
-  * Redis (optional, for session blacklisting and caching)
 * **Authentication:**
+  * JWT 
 
-  * JWT (JSON Web Tokens) for access control
-  * OAuth2.0 (optional extension, e.g., Google login)
 * **Containerization:**
-
   * Docker + Docker Compose
+
 * **DevOps:**
+  * GitHub Actions 
+  * Prometheus + Grafana 
 
-  * GitHub Actions (CI/CD pipeline)
-  * Prometheus + Grafana for monitoring
 * **Documentation:**
-
   * Swagger / OpenAPI 3
 
 ---
 
-## 🚀 What This Project Will Do
+## Quick start (local)
 
-This service will:
+- **Prerequisites**: Docker and Docker Compose.
 
-1. Allow users to **register** and **log in** securely.
-2. Issue **JWT access tokens** with short expiration and **refresh tokens** with longer expiration.
-3. Allow admins to define and manage **roles and permissions**.
-4. Enforce **access control** on APIs (e.g., only `admin` can create new users).
-5. Log and audit important security events (login attempts, token refresh, failed authentications).
-6. Be deployed as a **standalone service** that other microservices can integrate with.
+1. Clone:
+```bash
+git clone https://github.com/eduardodsxavier/AuthRBAC.git
+cd AuthRBAC
+````
 
----
+2. Copy env example:
 
-## 🧪 Example API Endpoints
+```bash
+cp .env.example .env
+# edit .env if needed
+```
 
-| Method | Endpoint             | Description              | Auth Required |
-| ------ | -------------------- | ------------------------ | ------------- |
-| POST   | `/auth/register`     | Register a new user      | ❌             |
-| POST   | `/auth/login`        | Login with credentials   | ❌             |
-| POST   | `/auth/refresh`      | Get new access token     | ❌             |
-| POST   | `/auth/logout`       | Revoke refresh token     | ✅             |
-| GET    | `/users/me`          | Get current user profile | ✅             |
-| POST   | `/users/assign-role` | Assign role to a user    | ✅ (admin)     |
-| GET    | `/admin/audit-logs`  | View security audit logs | ✅ (admin)     |
+3. Start stack (Postgres + Redis + app):
 
----
+```bash
+docker-compose up --build
+```
 
-## 🛡️ Security Highlights
+4. Open:
 
-* Passwords stored with **bcrypt/argon2**, never plain text.
-* JWTs signed with **HS256 or RS256**.
-* Environment variables used for secrets.
-* Rate limiting for login attempts (optional).
-* Audit logs for suspicious activities.
+* API: `http://localhost:8080`
+* Swagger: `http://localhost:8080/swagger-ui.html` (or `/swagger-ui/index.html` depending on Springdoc version)
+* Metrics: `http://localhost:8080/metrics`
 
 ---
 
-## 📊 Monitoring
+## Example env variables (`.env.example`)
 
-* API metrics exposed at `/metrics` for Prometheus.
-* Grafana dashboards for:
-
-  * Login success vs failure rates
-  * Token refresh usage
-  * Request latency per endpoint
+```
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/authdb
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=changeme
+SPRING_REDIS_HOST=redis
+JWT_SECRET=replace_with_strong_secret
+JWT_ACCESS_EXP_MIN=15
+JWT_REFRESH_EXP_DAYS=30
+```
 
 ---
 
-## 📝 Roadmap (Optional Extensions)
+## Example API calls
 
-* [ ] Add OAuth2 login (Google, GitHub).
-* [ ] Implement Two-Factor Authentication (2FA).
-* [ ] Add password reset via email.
-* [ ] Add role-based UI dashboard (with a small React frontend).
+Register:
+
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"P@ssw0rd"}'
+```
+
+Login (returns access + refresh token):
+
+```bash
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"P@ssw0rd"}'
+```
+
+Refresh (example: send refresh token in cookie or Authorization header depending on implementation):
+
+```bash
+curl -X POST http://localhost:8080/auth/refresh \
+  -H "Content-Type: application/json" \
+  --cookie "refreshToken=<token>"
+```
+
+Logout (revoke refresh token):
+
+```bash
+curl -X POST http://localhost:8080/auth/logout \
+  -H "Authorization: Bearer <access-token>"
+```
+
+---
+
+## API (summary)
+
+| Method |             Endpoint |    Auth required    | Notes                        |
+| ------ | -------------------: | :-----------------: | ---------------------------- |
+| GET    |            `/health` |          No         | Health check                 |
+| POST   |     `/auth/register` |          No         | Create user                  |
+| POST   |        `/auth/login` |          No         | Returns access + refresh     |
+| POST   |      `/auth/refresh` | Yes (refresh token) | Requires valid refresh token in cookie |
+| POST   |       `/auth/logout` |         Yes         | Revoke refresh token (Redis) |
+| GET    |          `/users/me` |         Yes         | Access token required        |
+| POST   | `/users/assign-role` |         Yes         | `admin` only                 |
+| GET    |  `/admin/audit-logs` |         Yes         | `admin` only                 |
+
+---
+
+## Security recommendations
+
+* Use **Argon2** for password hashing if available.
+* Store only refresh token identifiers (UUIDs) server-side (in Redis) rather than the full token.
+* Use HttpOnly, Secure cookies (SameSite=strict) for refresh tokens if you support browsers.
+* Implement token rotation and short access token lifetimes.
+* Rate-limit `/auth/login` and `/auth/refresh`. Track failed attempts per IP/user.
+* Store secrets in your cloud secret manager or CI secrets (never in repository).
+
+---
+
+## Testing & CI
+
+* Unit tests: JUnit + Mockito
+* Integration tests: Testcontainers for Postgres & Redis
+* CI: GitHub Actions — run tests, lint, and build image on PRs
+
+---
+
+## Observability
+
+* Metrics exposed at `/metrics` for Prometheus.
+* Track: `auth_login_attempts_total{result="success|failure"}`, `auth_token_refresh_count`, `rbac_role_assignment_total`, request latency histograms.
+
+---
+
+## Roadmap / TODOs
+
+* [ ] Add comprehensive unit & integration tests
+* [ ] Configure GitHub Actions (CI)
+* [ ] Add logging/structured logs + correlation IDs
+* [ ] Harden environment secret management
+* [ ] Provide Postman collection / example OpenAPI client
+
