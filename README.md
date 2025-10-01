@@ -88,10 +88,10 @@ JWT_REFRESH_EXP_DAYS=30
 
 ## Example API calls
 
-Register:
+Register (returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/auth/register \
+curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"alice","password":"P@ssw0rd"}'
 ```
@@ -99,15 +99,15 @@ curl -X POST http://localhost:8080/auth/register \
 Login (returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
+curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"alice","password":"P@ssw0rd"}'
 ```
 
-Refresh (example: send refresh token in cookie or Authorization header depending on implementation):
+Refresh (send refresh token in cookie returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/auth/refresh \
+curl -X POST http://localhost:8080/api/v1/auth/refresh \
   -H "Content-Type: application/json" \
   --cookie "refreshToken=<token>"
 ```
@@ -115,7 +115,7 @@ curl -X POST http://localhost:8080/auth/refresh \
 Logout (revoke refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/auth/logout \
+curl -X POST http://localhost:8080/api/v1/auth/logout \
   -H "Authorization: Bearer <access-token>"
 ```
 

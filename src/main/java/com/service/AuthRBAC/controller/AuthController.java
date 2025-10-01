@@ -18,6 +18,7 @@ import com.service.AuthRBAC.dtos.AccessTokenDto;
 import com.service.AuthRBAC.service.AuthService;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
@@ -32,7 +33,7 @@ public class AuthController {
         try {
             TokenDto token = service.register(registerInfo);
 
-            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
@@ -47,7 +48,7 @@ public class AuthController {
         try {
             TokenDto token = service.authenticate(loginInfo);
 
-            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
@@ -58,11 +59,13 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AccessTokenDto> refresh(@RequestBody RefreshTokenDto refreshToken, HttpServletResponse response) {
+    public ResponseEntity<AccessTokenDto> refresh(HttpServletResponse response, HttpServletRequest request) {
         try {
+            RefreshTokenDto refreshToken = new RefreshTokenDto(service.readServletCookie(request).get());
+
             TokenDto token = service.refresh(refreshToken);
 
-            Cookie cookie = new Cookie("RefreshToken", token.RefreshToken());
+            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
@@ -82,4 +85,5 @@ public class AuthController {
             throw new InvalidCredentialsException();
         }
     }
+
 }

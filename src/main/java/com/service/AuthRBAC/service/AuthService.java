@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import com.service.AuthRBAC.repository.TokenBlackListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
 import com.service.AuthRBAC.security.UserDetailsImpl;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -82,7 +84,7 @@ public class AuthService {
     }
 
     public TokenDto refresh(RefreshTokenDto refreshToken) {
-        Optional<TokenBlackList> securityFault = blackListRepository.findById(refreshToken.token()); 
+        Optional<TokenBlackList> securityFault = blackListRepository.findById(refreshToken.refreshToken()); 
         if (securityFault.isPresent()) {
             Users user = usersRepository.findById(securityFault.get().userId()).get();
             TokenWhiteList whiteList = whiteListRepository.findByUserId(user.id()).get();
@@ -93,14 +95,17 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.token()).get();
+
+        System.out.println("3333");
+
+        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.refreshToken()).get();
         whiteListRepository.delete(whiteList);
 
         if (ZonedDateTime.now(ZoneId.of("GMT-3")).toInstant().isAfter(whiteList.expireDate())) {
             throw new InvalidCredentialsException();
         }
 
-        blackListRepository.save(new TokenBlackList(refreshToken.token(), whiteList.userId()));
+        blackListRepository.save(new TokenBlackList(refreshToken.refreshToken(), whiteList.userId()));
 
         UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(whiteList.userId()).get());
 
@@ -114,7 +119,7 @@ public class AuthService {
     }
 
     public void logout(RefreshTokenDto refreshToken) {
-        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.token()).get(); 
+        TokenWhiteList whiteList = whiteListRepository.findById(refreshToken.refreshToken()).get(); 
         blackListRepository.save(new TokenBlackList(whiteList.accessToken(), whiteList.userId()));
 
         whiteListRepository.delete(whiteList);
@@ -135,5 +140,12 @@ public class AuthService {
     }
 
     public void auditLogs() {
+    }
+
+    public Optional<String> readServletCookie(HttpServletRequest request){
+      return Arrays.stream(request.getCookies())
+        .filter(cookie->cookie.getName().equals("refreshToken"))
+        .map(Cookie::getValue)
+        .findAny();
     }
 }

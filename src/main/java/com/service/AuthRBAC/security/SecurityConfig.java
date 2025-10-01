@@ -23,19 +23,19 @@ public class SecurityConfig {
     private UserAuthenticationFilter userAuthenticationFilter;
 
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
-        "/auth/login",
-        "/auth/register",
-        "/auth/refresh",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/refresh",
     };
 
     public static final String[] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
-        "/auth/logout",
-        "/users/me",
+        "/api/v1/auth/logout",
+        "/api/v1/users/me",
     };
 
     public static final String[] ENDPOINTS_ADMIN = {
-        "/users/assign-role",
-        "/admin/audit-logs",
+        "/api/v1/users/assign-role",
+        "/api/v1/admin/audit-logs",
     };
 
     @Bean
