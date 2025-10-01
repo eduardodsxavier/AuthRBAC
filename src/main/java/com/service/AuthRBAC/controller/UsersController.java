@@ -18,7 +18,7 @@ import com.service.AuthRBAC.service.AuthService;
 import com.service.AuthRBAC.exception.InvalidRoleException;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 public class UsersController {
 
     @Autowired
