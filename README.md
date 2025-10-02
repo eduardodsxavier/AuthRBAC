@@ -1,6 +1,6 @@
 # 🔐 Authentication & RBAC Service
 
-A standalone **Authentication & Authorization** microservice providing user management, JWT-based authentication, and Role-Based Access Control (RBAC). Designed to be reused by other microservices.
+A standalone **Authentication & Authorization** microservice providing user management, JWT-based authentication, and Role-Based Access Control (RBAC).
 
 ---
 
@@ -11,9 +11,6 @@ A standalone **Authentication & Authorization** microservice providing user mana
 - **Token lifecycle**: token rotation and revocation (Redis-backed allowlist/blocklist).
 - **RBAC**: define roles & permissions; API endpoints protected by role checks (e.g.,`viewer`, `admin`).
 - **Security**: password hashing (argon2 / bcrypt), secure secret injection, rate limiting.
-- **API-first**: Swagger/OpenAPI docs and example requests.
-- **Observability**: Prometheus metrics; Grafana dashboards.
-- **DevOps**: Dockerized, CI via GitHub Actions, DB migrations with Flyway/Liquibase.
 
 ---
 
@@ -32,13 +29,6 @@ A standalone **Authentication & Authorization** microservice providing user mana
 * **Containerization:**
   * Docker + Docker Compose
 
-* **DevOps:**
-  * GitHub Actions 
-  * Prometheus + Grafana 
-
-* **Documentation:**
-  * Swagger / OpenAPI 3
-
 ---
 
 ## Quick start (local)
@@ -49,39 +39,12 @@ A standalone **Authentication & Authorization** microservice providing user mana
 ```bash
 git clone https://github.com/eduardodsxavier/AuthRBAC.git
 cd AuthRBAC
-````
+```
 
-2. Copy env example:
+2. Start stack (Postgres + Redis + app):
 
 ```bash
-cp .env.example .env
-# edit .env if needed
-```
-
-3. Start stack (Postgres + Redis + app):
-
-```bash
-docker-compose up --build
-```
-
-4. Open:
-
-* API: `http://localhost:8080`
-* Swagger: `http://localhost:8080/swagger-ui.html` (or `/swagger-ui/index.html` depending on Springdoc version)
-* Metrics: `http://localhost:8080/metrics`
-
----
-
-## Example env variables (`.env.example`)
-
-```
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/authdb
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=changeme
-SPRING_REDIS_HOST=redis
-JWT_SECRET=replace_with_strong_secret
-JWT_ACCESS_EXP_MIN=15
-JWT_REFRESH_EXP_DAYS=30
+mvn spring-boot:run
 ```
 
 ---
@@ -125,7 +88,6 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 
 | Method |             Endpoint |    Auth required    | Notes                        |
 | ------ | -------------------: | :-----------------: | ---------------------------- |
-| GET    |            `/health` |          No         | Health check                 |
 | POST   |     `/auth/register` |          No         | Create user                  |
 | POST   |        `/auth/login` |          No         | Returns access + refresh     |
 | POST   |      `/auth/refresh` | Yes (refresh token) | Requires valid refresh token in cookie |
@@ -141,25 +103,9 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 
 * Passwords stored with bcrypt/argon2, never plain text.
 * JWTs signed with HMAC256.
-* Environment variables used for secrets.
 * Audit logs for suspicious activities.
 * Use HttpOnly, Secure cookies (SameSite=strict) for refresh tokens if you support browsers.
 * Implement token rotation and short access token lifetimes.
-
----
-
-## Testing & CI
-
-* Unit tests: JUnit + Mockito
-* Integration tests: Testcontainers for Postgres & Redis
-* CI: GitHub Actions — run tests, lint, and build image on PRs
-
----
-
-## Observability
-
-* Metrics exposed at `/metrics` for Prometheus.
-* Track: `auth_login_attempts_total{result="success|failure"}`, `auth_token_refresh_count`, `rbac_role_assignment_total`, request latency histograms.
 
 ---
 
@@ -170,4 +116,8 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 * [ ] Add logging/structured logs + correlation IDs
 * [ ] Harden environment secret management
 * [ ] Provide Postman collection / example OpenAPI client
-
+* [ ] docker compose
+* [ ] elasticsearch
+* [ ] prometheus
+* [ ] grafana
+* [ ] swagger
