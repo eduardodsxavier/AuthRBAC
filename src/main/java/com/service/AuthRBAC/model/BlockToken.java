@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 
 
 @RedisHash("blockList")
@@ -14,9 +15,13 @@ public class BlockToken implements Serializable {
 
     private Long userId;
 
-    public BlockToken(String token, Long userId) {
+    @TimeToLive
+    private Long expire;
+
+    public BlockToken(String token, Long userId, Long expire) {
         this.token = token;
         this.userId = userId;
+        this.expire = expire;
     }
 
     public void setToken(String refreshToken) {
@@ -33,5 +38,13 @@ public class BlockToken implements Serializable {
 
     public Long userId() {
         return userId;
+    }
+
+    public void setExpire(Long expire) {
+        this.expire = expire;
+    }
+
+    public Long expire() {
+        return expire;
     }
 }

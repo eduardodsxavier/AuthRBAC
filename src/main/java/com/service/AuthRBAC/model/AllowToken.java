@@ -1,10 +1,10 @@
 package com.service.AuthRBAC.model;
 
 import java.io.Serializable;
-import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
 
@@ -19,13 +19,14 @@ public class AllowToken implements Serializable {
     @Indexed
     private Long userId;
 
-    private Instant expireDate;
+    @TimeToLive
+    private Long expire;
 
-    public AllowToken(String refreshToken, String accessToken, Long userId, Instant expireDate) {
+    public AllowToken(String refreshToken, String accessToken, Long userId, Long expire) {
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
         this.userId = userId;
-        this.expireDate = expireDate;
+        this.expire = expire;
     }
 
     public void setRefreshToken(String refreshToken) {
@@ -52,11 +53,11 @@ public class AllowToken implements Serializable {
         return userId;
     }
 
-    public void setExpireDate(Instant expireDate) {
-        this.expireDate = expireDate;
+    public void setExpire(Long expire) {
+        this.expire = expire;
     }
 
-    public Instant expireDate() {
-        return expireDate;
+    public Long expire() {
+        return expire;
     }
 }

@@ -2,9 +2,7 @@ package com.service.AuthRBAC.service;
 
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,9 +62,8 @@ public class AuthService {
 
         String refreshToken = UUID.randomUUID().toString();
         String accessToken = jwtService.generateToken(userDetails);
-        Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
 
-        allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), expireDate));   
+        allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), Duration.ofSeconds(20).toSeconds()));
 
         return new TokenDto(accessToken, refreshToken);
     }
@@ -89,38 +86,30 @@ public class AuthService {
             Users user = usersRepository.findById(securityFault.get().userId()).get();
             AllowToken allowToken = allowListRepository.findByUserId(user.id()).get();
 
-            blockListRepository.save(new BlockToken(allowToken.accessToken(), user.id()));
+            blockListRepository.save(new BlockToken(allowToken.accessToken(), user.id(), Duration.ofMinutes(15).toSeconds()));
             allowListRepository.delete(allowToken);
 
             throw new InvalidCredentialsException();
         }
 
-
-        System.out.println("3333");
-
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get();
         allowListRepository.delete(allowToken);
 
-        if (ZonedDateTime.now(ZoneId.of("GMT-3")).toInstant().isAfter(allowToken.expireDate())) {
-            throw new InvalidCredentialsException();
-        }
-
-        blockListRepository.save(new BlockToken(refreshToken.refreshToken(), allowToken.userId()));
+        blockListRepository.save(new BlockToken(refreshToken.refreshToken(), allowToken.userId(), Duration.ofSeconds(20).toSeconds()));
 
         UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(allowToken.userId()).get());
 
         String newRefreshToken = UUID.randomUUID().toString();
         String newAccessToken = jwtService.generateToken(userDetails);
-        Instant expireDate = ZonedDateTime.now(ZoneId.of("GMT-3")).plusDays(7).toInstant();
 
-        allowListRepository.save(new AllowToken(newRefreshToken, newAccessToken, userDetails.getUser().id(), expireDate));   
+        allowListRepository.save(new AllowToken(newRefreshToken, newAccessToken, userDetails.getUser().id(), Duration.ofDays(7).toSeconds()));   
 
         return new TokenDto(newAccessToken, newRefreshToken);
     }
 
     public void logout(RefreshTokenDto refreshToken) {
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get(); 
-        blockListRepository.save(new BlockToken(allowToken.accessToken(), allowToken.userId()));
+        blockListRepository.save(new BlockToken(allowToken.accessToken(), allowToken.userId(), Duration.ofDays(7).toSeconds()));
 
         allowListRepository.delete(allowToken);
     }
