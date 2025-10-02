@@ -136,14 +136,15 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 
 ---
 
-## Security recommendations
+## Securit
 
-* Use **Argon2** for password hashing if available.
-* Store only refresh token identifiers (UUIDs) server-side (in Redis) rather than the full token.
+
+* Passwords stored with bcrypt/argon2, never plain text.
+* JWTs signed with HMAC256.
+* Environment variables used for secrets.
+* Audit logs for suspicious activities.
 * Use HttpOnly, Secure cookies (SameSite=strict) for refresh tokens if you support browsers.
 * Implement token rotation and short access token lifetimes.
-* Rate-limit `/auth/login` and `/auth/refresh`. Track failed attempts per IP/user.
-* Store secrets in your cloud secret manager or CI secrets (never in repository).
 
 ---
 
