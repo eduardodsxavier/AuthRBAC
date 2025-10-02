@@ -15,7 +15,9 @@ import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.TokenDto;
 import com.service.AuthRBAC.dtos.AccessTokenDto;
+import com.service.AuthRBAC.dtos.LogDto;
 import com.service.AuthRBAC.service.AuthService;
+import com.service.AuthRBAC.service.LogService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +30,9 @@ public class AuthController {
     @Autowired
     private AuthService service; 
 
+    @Autowired
+    private LogService log; 
+
     @PostMapping("/register")
     public ResponseEntity<AccessTokenDto> register(@RequestBody RegisterDto registerInfo, HttpServletResponse response)  {
         try {
@@ -37,8 +42,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
+            log.register(new LogDto(registerInfo.username(), true));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
+            log.register(new LogDto(registerInfo.username(), true));
             throw new UserAlreadyExistException(registerInfo.username());
         }
     }
@@ -52,8 +59,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
+            log.register(new LogDto(loginInfo.username(), true));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
+            log.register(new LogDto(loginInfo.username(), false));
             throw new InvalidCredentialsException();
         }
     }
@@ -69,8 +78,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
+            log.refresh(new LogDto("", true));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
+            log.refresh(new LogDto("", false));
             throw new InvalidCredentialsException();
         }
     }
@@ -80,8 +91,10 @@ public class AuthController {
         try {
             service.logout(refreshToken);
 
+            log.logOut(new LogDto("", true));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            log.logOut(new LogDto("", false));
             throw new InvalidCredentialsException();
         }
     }

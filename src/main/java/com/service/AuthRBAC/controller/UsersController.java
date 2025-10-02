@@ -11,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
+import com.service.AuthRBAC.dtos.LogDto;
 
 import jakarta.servlet.http.HttpServletRequest;
 import com.service.AuthRBAC.service.AuthService;
-
+import com.service.AuthRBAC.service.LogService;
 import com.service.AuthRBAC.exception.InvalidRoleException;
 
 @RestController
@@ -23,6 +24,10 @@ public class UsersController {
 
     @Autowired
     private AuthService service; 
+
+
+    @Autowired
+    private LogService log; 
 
     @GetMapping("/me")
     public ResponseEntity<UserInfoDto> me(HttpServletRequest request)  {
@@ -34,8 +39,11 @@ public class UsersController {
     public ResponseEntity<Void> assigbRole(@RequestBody AssignRoleDto newRoleInfo) {
         try {
             service.assignRole(newRoleInfo);
+
+            log.assignRole(new LogDto(newRoleInfo.userId().toString(), true));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            log.assignRole(new LogDto(newRoleInfo.userId().toString(), false));
             throw new InvalidRoleException(newRoleInfo.role().toString());
         }
     }
