@@ -1,6 +1,7 @@
 package com.service.AuthRBAC.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
 import com.service.AuthRBAC.dtos.LogDto;
-
+import com.service.AuthRBAC.dtos.UpdateUserDto;
 import com.service.AuthRBAC.enums.Action;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,5 +49,17 @@ public class UsersController {
             log.save(new LogDto(newRoleInfo.userId().toString(), false, Action.ASSIGN_ROLE));
             throw new InvalidRoleException(newRoleInfo.role().toString());
         }
+    }
+
+    @PutMapping("update")
+    public ResponseEntity<UserInfoDto> updateUser(HttpServletRequest request, @RequestBody UpdateUserDto newUserInfo) {
+        try {
+            service.updateUser(request, newUserInfo);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
     }
 }

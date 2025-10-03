@@ -12,6 +12,7 @@ import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.RegisterDto;
 import com.service.AuthRBAC.dtos.TokenDto;
+import com.service.AuthRBAC.dtos.UpdateUserDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +126,16 @@ public class AuthService {
         Users user = usersRepository.findByName(username).get();
 
         return new UserInfoDto(user.id(), user.name(), user.role());
+    }
+
+    public void updateUser(HttpServletRequest request, UpdateUserDto newUserInfo) {
+        String username = jwtService.getSubjectFromToken(jwtService.recoveryToken(request));
+        Users user = usersRepository.findByName(username).get();
+
+        user.setName(newUserInfo.username());
+        user.setPassword(newUserInfo.password());
+
+        usersRepository.save(user);
     }
 
     public void assignRole(AssignRoleDto newRoleInfo) {
