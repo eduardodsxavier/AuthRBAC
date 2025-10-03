@@ -1,6 +1,6 @@
 package com.service.AuthRBAC.model;
 
-import java.sql.Time;
+import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 
@@ -24,7 +24,8 @@ public class Log {
     private Long id; 
 
     @CreatedDate
-    private Time timeStamp;
+    private Instant timeStamp;
+
     private String username;
 
     @Column(nullable = false)
@@ -35,7 +36,7 @@ public class Log {
 
     public Log() {}
 
-    public Log(Long id, Time timeStamp, String username, Action action, boolean success) {
+    public Log(Long id, Instant timeStamp, String username, Action action, boolean success) {
         this.id = id;
         this.timeStamp = timeStamp;
         this.action = action;
@@ -51,11 +52,11 @@ public class Log {
         return id;
     }
 
-    public void setTimeStamp(Time timeStamp) {
+    public void setTimeStamp(Instant timeStamp) {
         this.timeStamp = timeStamp;
     }
 
-    public Time timeStamp() {
+    public Instant timeStamp() {
         return timeStamp;
     }
 

@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
@@ -22,8 +23,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.service.AuthRBAC.model.Users;
 import com.service.AuthRBAC.model.AllowToken;
 import com.service.AuthRBAC.model.BlockToken;
+import com.service.AuthRBAC.model.Log;
 import com.service.AuthRBAC.enums.Role;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
+import com.service.AuthRBAC.repository.LogRepository;
 import com.service.AuthRBAC.repository.TokenAllowListRepository;
 import com.service.AuthRBAC.repository.TokenBlockListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
@@ -40,6 +43,9 @@ public class AuthService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    @Autowired
+    private LogRepository logRepository;
 
     @Autowired
     private AuthenticationManager manager;
@@ -63,7 +69,7 @@ public class AuthService {
         String refreshToken = UUID.randomUUID().toString();
         String accessToken = jwtService.generateToken(userDetails);
 
-        allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), Duration.ofSeconds(20).toSeconds()));
+        allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), Duration.ofDays(7).toSeconds()));
 
         return new TokenDto(accessToken, refreshToken);
     }
@@ -95,7 +101,7 @@ public class AuthService {
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get();
         allowListRepository.delete(allowToken);
 
-        blockListRepository.save(new BlockToken(refreshToken.refreshToken(), allowToken.userId(), Duration.ofSeconds(20).toSeconds()));
+        blockListRepository.save(new BlockToken(refreshToken.refreshToken(), allowToken.userId(), allowToken.expire()));
 
         UserDetailsImpl userDetails = new UserDetailsImpl(usersRepository.findById(allowToken.userId()).get());
 
@@ -128,7 +134,8 @@ public class AuthService {
         usersRepository.save(user);
     }
 
-    public void auditLogs() {
+    public List<Log> auditLogs() {
+        return logRepository.findAll();
     }
 
     public Optional<String> readServletCookie(HttpServletRequest request){

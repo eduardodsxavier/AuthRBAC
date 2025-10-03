@@ -13,6 +13,8 @@ import com.service.AuthRBAC.dtos.UserInfoDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
 import com.service.AuthRBAC.dtos.LogDto;
 
+import com.service.AuthRBAC.enums.Action;
+
 import jakarta.servlet.http.HttpServletRequest;
 import com.service.AuthRBAC.service.AuthService;
 import com.service.AuthRBAC.service.LogService;
@@ -36,14 +38,14 @@ public class UsersController {
     }
 
     @PostMapping("/assign-role")
-    public ResponseEntity<Void> assigbRole(@RequestBody AssignRoleDto newRoleInfo) {
+    public ResponseEntity<Void> assignRole(@RequestBody AssignRoleDto newRoleInfo) {
         try {
             service.assignRole(newRoleInfo);
 
-            log.assignRole(new LogDto(newRoleInfo.userId().toString(), true));
+            log.save(new LogDto(newRoleInfo.userId().toString(), true, Action.ASSIGN_ROLE));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            log.assignRole(new LogDto(newRoleInfo.userId().toString(), false));
+            log.save(new LogDto(newRoleInfo.userId().toString(), false, Action.ASSIGN_ROLE));
             throw new InvalidRoleException(newRoleInfo.role().toString());
         }
     }

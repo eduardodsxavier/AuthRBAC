@@ -20,6 +20,7 @@ import com.service.AuthRBAC.model.Users;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Component
 public class UserAuthenticationFilter extends OncePerRequestFilter {
@@ -40,8 +41,9 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
             if (token == null) {throw new RuntimeException("absent token");}
             if (blockListRepository.findById(token).isPresent()) {throw new RuntimeException("token in the blacklist");}
             String subject = service.getSubjectFromToken(token);
-            Users user = repository.findByName(subject).get();
-            UserDetailsImpl userDetails = new UserDetailsImpl(user);
+            Optional<Users> user = repository.findByName(subject);
+            if (user.isEmpty()) {throw new RuntimeException("invalid token");}
+            UserDetailsImpl userDetails = new UserDetailsImpl(user.get());
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.dtos.RegisterDto;
+import com.service.AuthRBAC.enums.Action;
 import com.service.AuthRBAC.exception.UserAlreadyExistException;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
 import com.service.AuthRBAC.dtos.LoginDto;
@@ -42,10 +43,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
-            log.register(new LogDto(registerInfo.username(), true));
+            log.save(new LogDto(registerInfo.username(), true, Action.REGISTER));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
-            log.register(new LogDto(registerInfo.username(), true));
+            log.save(new LogDto(registerInfo.username(), true, Action.REGISTER));
             throw new UserAlreadyExistException(registerInfo.username());
         }
     }
@@ -59,10 +60,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
-            log.register(new LogDto(loginInfo.username(), true));
+            log.save(new LogDto(loginInfo.username(), true, Action.LOGIN));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
-            log.register(new LogDto(loginInfo.username(), false));
+            log.save(new LogDto(loginInfo.username(), false, Action.LOGIN));
             throw new InvalidCredentialsException();
         }
     }
@@ -78,10 +79,10 @@ public class AuthController {
             cookie.setHttpOnly(true);
             response.addCookie(cookie);
 
-            log.refresh(new LogDto("", true));
+            log.save(new LogDto("", true, Action.REFRESH));
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
-            log.refresh(new LogDto("", false));
+            log.save(new LogDto("", false, Action.REFRESH));
             throw new InvalidCredentialsException();
         }
     }
@@ -91,10 +92,10 @@ public class AuthController {
         try {
             service.logout(refreshToken);
 
-            log.logOut(new LogDto("", true));
+            log.save(new LogDto("", true, Action.LOG_OUT));
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            log.logOut(new LogDto("", false));
+            log.save(new LogDto("", false, Action.LOG_OUT));
             throw new InvalidCredentialsException();
         }
     }
