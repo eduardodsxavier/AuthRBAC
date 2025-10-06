@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -36,17 +35,7 @@ public class Users {
 
     private boolean enabled;
 
-    @Transient
-    private PasswordEncoder passwordEncoder;
-
-    public Users() {
-        this.passwordEncoder = new BCryptPasswordEncoder(12);
-    };
-
-    public Users(Long id, String name, String password, Role role, boolean enabled) {
-        this.id = id;
-        this.name = name;
-        this.password = password; 
+    @Transient private PasswordEncoder passwordEncoder; public Users() { this.passwordEncoder = new BCryptPasswordEncoder(12); }; public Users(Long id, String name, String password, Role role, boolean enabled) { this.id = id; this.name = name; this.password = password; 
         this.role = role;
         this.enabled = enabled;
         this.passwordEncoder = new BCryptPasswordEncoder(12);

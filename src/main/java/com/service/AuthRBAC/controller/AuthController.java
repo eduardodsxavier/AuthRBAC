@@ -86,7 +86,8 @@ public class AuthController {
             log.save(username, true, Action.REFRESH);
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
-            log.save("", false, Action.REFRESH);
+            String username = service.getUsernameByRequest(request);
+            log.save(username, false, Action.REFRESH);
             throw new InvalidCredentialsException(e.getMessage());
         }
     }
@@ -100,7 +101,8 @@ public class AuthController {
             log.save(username, true, Action.LOG_OUT);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            log.save("", false, Action.LOG_OUT);
+            String username = service.getUsernameByRequest(request);
+            log.save(username, false, Action.LOG_OUT);
             throw new InvalidCredentialsException(e.getMessage());
         }
     }

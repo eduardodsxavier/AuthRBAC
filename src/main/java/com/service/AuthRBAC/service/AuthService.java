@@ -82,7 +82,7 @@ public class AuthService {
             blockListRepository.save(new BlockToken(allowToken.accessToken(), user.id(), Duration.ofMinutes(15).toSeconds()));
             allowListRepository.delete(allowToken);
 
-            throw new InvalidCredentialsException();
+            throw new InvalidCredentialsException("token security fault");
         }
 
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get();
@@ -113,5 +113,11 @@ public class AuthService {
         .filter(cookie->cookie.getName().equals("refreshToken"))
         .map(Cookie::getValue)
         .findAny();
+    }
+
+    public String getUsernameByRequest(HttpServletRequest request) {
+        String token = readRefreshToken(request).get();
+        AllowToken allowToken = allowListRepository.findById(token).get();
+        return usersRepository.findById(allowToken.userId()).get().name();
     }
 }
