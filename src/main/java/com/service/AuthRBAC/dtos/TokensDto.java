@@ -1,6 +1,6 @@
 package com.service.AuthRBAC.dtos;
 
-public record TokenDto(
+public record TokensDto(
     String AccessToken,
     String RefreshToken
 ) {}

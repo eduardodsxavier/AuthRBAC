@@ -8,6 +8,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.service.AuthRBAC.enums.Role;
 
@@ -31,7 +36,12 @@ public class Users {
 
     private boolean enabled;
 
-    public Users() {};
+    @Transient
+    private PasswordEncoder passwordEncoder;
+
+    public Users() {
+        this.passwordEncoder = new BCryptPasswordEncoder(12);
+    };
 
     public Users(Long id, String name, String password, Role role, boolean enabled) {
         this.id = id;
@@ -39,6 +49,7 @@ public class Users {
         this.password = password; 
         this.role = role;
         this.enabled = enabled;
+        this.passwordEncoder = new BCryptPasswordEncoder(12);
     }
 
     public void setId(Long id) {
@@ -58,7 +69,7 @@ public class Users {
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = passwordEncoder.encode(password);
     }
 
     public String password() {

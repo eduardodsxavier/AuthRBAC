@@ -6,28 +6,20 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.List;
 
-import com.service.AuthRBAC.dtos.LoginDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
-import com.service.AuthRBAC.dtos.RegisterDto;
-import com.service.AuthRBAC.dtos.TokenDto;
-import com.service.AuthRBAC.dtos.UpdateUserDto;
-import com.service.AuthRBAC.dtos.AssignRoleDto;
+import com.service.AuthRBAC.dtos.TokensDto;
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.service.AuthRBAC.model.Users;
 import com.service.AuthRBAC.model.AllowToken;
 import com.service.AuthRBAC.model.BlockToken;
-import com.service.AuthRBAC.model.Log;
 import com.service.AuthRBAC.enums.Role;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
-import com.service.AuthRBAC.repository.LogRepository;
 import com.service.AuthRBAC.repository.TokenAllowListRepository;
 import com.service.AuthRBAC.repository.TokenBlockListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
@@ -40,13 +32,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthService {
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private UsersRepository usersRepository;
-
-    @Autowired
-    private LogRepository logRepository;
 
     @Autowired
     private AuthenticationManager manager;
@@ -60,7 +46,7 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public TokenDto authenticate(LoginDto loginInfo) {
+    public TokensDto authenticate(UserInfoDto loginInfo) {
         UsernamePasswordAuthenticationToken userAuthenticationToken = new UsernamePasswordAuthenticationToken(loginInfo.username(), loginInfo.password());
 
         Authentication authentication = manager.authenticate(userAuthenticationToken); 
@@ -72,22 +58,22 @@ public class AuthService {
 
         allowListRepository.save(new AllowToken(refreshToken, accessToken, userDetails.getId(), Duration.ofDays(7).toSeconds()));
 
-        return new TokenDto(accessToken, refreshToken);
+        return new TokensDto(accessToken, refreshToken);
     }
 
-    public TokenDto register(RegisterDto registerInfo) {
+    public TokensDto register(UserInfoDto registerInfo) {
         Users user = new Users();
         user.setName(registerInfo.username());
-        user.setPassword(passwordEncoder.encode(registerInfo.password()));
+        user.setPassword(registerInfo.password());
         user.setRole(Role.admin);
         user.setEnabled(true);
         
         usersRepository.save(user);
 
-        return authenticate(new LoginDto(registerInfo.username(), registerInfo.password()));
+        return authenticate(new UserInfoDto(registerInfo.username(), registerInfo.password()));
     }
 
-    public TokenDto refresh(RefreshTokenDto refreshToken) {
+    public TokensDto refresh(RefreshTokenDto refreshToken) {
         Optional<BlockToken> securityFault = blockListRepository.findById(refreshToken.refreshToken()); 
         if (securityFault.isPresent()) {
             Users user = usersRepository.findById(securityFault.get().userId()).get();
@@ -111,45 +97,18 @@ public class AuthService {
 
         allowListRepository.save(new AllowToken(newRefreshToken, newAccessToken, userDetails.getUser().id(), Duration.ofDays(7).toSeconds()));   
 
-        return new TokenDto(newAccessToken, newRefreshToken);
+        return new TokensDto(newAccessToken, newRefreshToken);
     }
 
-    public void logout(RefreshTokenDto refreshToken) {
+    public String logout(RefreshTokenDto refreshToken) {
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get(); 
         blockListRepository.save(new BlockToken(allowToken.accessToken(), allowToken.userId(), Duration.ofDays(7).toSeconds()));
 
         allowListRepository.delete(allowToken);
+        return usersRepository.findById(allowToken.userId()).get().name();
     }
 
-    public UserInfoDto UserInformation(HttpServletRequest request) {
-        String username = jwtService.getSubjectFromToken(jwtService.recoveryToken(request));
-        Users user = usersRepository.findByName(username).get();
-
-        return new UserInfoDto(user.id(), user.name(), user.role());
-    }
-
-    public void updateUser(HttpServletRequest request, UpdateUserDto newUserInfo) {
-        String username = jwtService.getSubjectFromToken(jwtService.recoveryToken(request));
-        Users user = usersRepository.findByName(username).get();
-
-        user.setName(newUserInfo.username());
-        user.setPassword(newUserInfo.password());
-
-        usersRepository.save(user);
-    }
-
-    public void assignRole(AssignRoleDto newRoleInfo) {
-        Users user = usersRepository.findById(newRoleInfo.userId()).get();
-        user.setRole(newRoleInfo.role());
-
-        usersRepository.save(user);
-    }
-
-    public List<Log> auditLogs() {
-        return logRepository.findAll();
-    }
-
-    public Optional<String> readServletCookie(HttpServletRequest request){
+    public Optional<String> readRefreshToken(HttpServletRequest request){
       return Arrays.stream(request.getCookies())
         .filter(cookie->cookie.getName().equals("refreshToken"))
         .map(Cookie::getValue)

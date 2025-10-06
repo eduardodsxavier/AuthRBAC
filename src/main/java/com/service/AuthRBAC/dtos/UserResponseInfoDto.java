@@ -2,7 +2,8 @@ package com.service.AuthRBAC.dtos;
 
 import com.service.AuthRBAC.enums.Role;
 
-public record AssignRoleDto(
+public record UserResponseInfoDto(
+    Long userId,
     String username,
-    Role role 
+    Role role
 ) {}

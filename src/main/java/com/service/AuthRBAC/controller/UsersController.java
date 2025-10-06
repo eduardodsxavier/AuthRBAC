@@ -3,6 +3,7 @@ package com.service.AuthRBAC.controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,14 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.dtos.UserInfoDto;
+import com.service.AuthRBAC.dtos.UserResponseInfoDto;
 import com.service.AuthRBAC.dtos.AssignRoleDto;
-import com.service.AuthRBAC.dtos.LogDto;
-import com.service.AuthRBAC.dtos.UpdateUserDto;
 import com.service.AuthRBAC.enums.Action;
 
 import jakarta.servlet.http.HttpServletRequest;
-import com.service.AuthRBAC.service.AuthService;
 import com.service.AuthRBAC.service.LogService;
+import com.service.AuthRBAC.service.UserService;
 import com.service.AuthRBAC.exception.InvalidRoleException;
 
 @RestController
@@ -26,15 +26,14 @@ import com.service.AuthRBAC.exception.InvalidRoleException;
 public class UsersController {
 
     @Autowired
-    private AuthService service; 
-
+    private UserService service; 
 
     @Autowired
     private LogService log; 
 
     @GetMapping("/me")
-    public ResponseEntity<UserInfoDto> me(HttpServletRequest request)  {
-        UserInfoDto userInfo = service.UserInformation(request);
+    public ResponseEntity<UserResponseInfoDto> me(HttpServletRequest request)  {
+        UserResponseInfoDto userInfo = service.UserInformation(request);
         return new ResponseEntity<>(userInfo, HttpStatus.OK);
     }
 
@@ -43,23 +42,31 @@ public class UsersController {
         try {
             service.assignRole(newRoleInfo);
 
-            log.save(new LogDto(newRoleInfo.userId().toString(), true, Action.ASSIGN_ROLE));
+            log.save(newRoleInfo.username().toString(), true, Action.ASSIGN_ROLE);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            log.save(new LogDto(newRoleInfo.userId().toString(), false, Action.ASSIGN_ROLE));
-            throw new InvalidRoleException(newRoleInfo.role().toString());
+            log.save(newRoleInfo.username().toString(), false, Action.ASSIGN_ROLE);
+            throw new InvalidRoleException(e.getMessage());
         }
     }
 
     @PutMapping("update")
-    public ResponseEntity<UserInfoDto> updateUser(HttpServletRequest request, @RequestBody UpdateUserDto newUserInfo) {
+    public ResponseEntity<UserResponseInfoDto> updateUser(HttpServletRequest request, @RequestBody UserInfoDto newUserInfo) {
         try {
             service.updateUser(request, newUserInfo);
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
+    }
 
+    @DeleteMapping("{username}")
+    public ResponseEntity<Void> deleteUser() {
+        try {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }
