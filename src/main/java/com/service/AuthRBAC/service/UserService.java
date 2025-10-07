@@ -44,4 +44,16 @@ public class UserService {
 
         usersRepository.save(user);
     }
+
+    public void deleteUser(HttpServletRequest request) {
+        String username = jwtService.getSubjectFromToken(jwtService.recoveryToken(request));
+        Users user = usersRepository.findByName(username).get();
+
+        usersRepository.delete(user);
+    }
+
+    public void deleteUserByName(String username) {
+        Users user = usersRepository.findByName(username).get();
+        usersRepository.delete(user);
+    }
 }

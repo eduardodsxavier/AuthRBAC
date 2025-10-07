@@ -11,7 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.service.AuthRBAC.dtos.LogDto;
+import com.service.AuthRBAC.enums.Role;
 import com.service.AuthRBAC.service.LogService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 
 @RestController
@@ -22,9 +25,18 @@ public class UtilsController {
     private LogService service;
 
     @GetMapping("/audit-logs")
-    public List<LogDto> AuditLogs()  {
+    public List<LogDto> auditLogs()  {
         try {
             return service.auditLogs();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @GetMapping("/audit-logs/me")
+    public List<LogDto> userAuditLogs(HttpServletRequest request)  {
+        try {
+            return service.userAuditLogs(request);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -36,7 +48,8 @@ public class UtilsController {
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<Void> roles()  {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Role[]> roles()  {
+        Role[] roles = Role.values();
+        return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 }

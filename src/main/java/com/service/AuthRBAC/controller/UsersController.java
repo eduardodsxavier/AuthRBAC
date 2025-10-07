@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
@@ -61,9 +62,22 @@ public class UsersController {
         }
     }
 
-    @DeleteMapping("{username}")
-    public ResponseEntity<Void> deleteUser() {
+    @DeleteMapping("/delete/me")
+    public ResponseEntity<Void> deleteUser(HttpServletRequest request) {
         try {
+            service.deleteUser(request);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{username}")
+    public ResponseEntity<Void> deleteUserByName(@PathVariable String username) {
+        try {
+            service.deleteUserByName(username);
+
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());

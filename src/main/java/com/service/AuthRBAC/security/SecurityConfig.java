@@ -26,17 +26,22 @@ public class SecurityConfig {
         "/api/v1/auth/login",
         "/api/v1/auth/register",
         "/api/v1/auth/refresh",
-        "/api/v1/auth/logout",
+        "/api/v1/health",
     };
 
     public static final String[] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
+        "/api/v1/auth/logout",
         "/api/v1/users/me",
-        "/api/v1/users",
+        "/api/v1/users/update",
+        "/api/v1/users/delete/me",
+        "/api/v1/audit-logs/me",
     };
 
     public static final String[] ENDPOINTS_ADMIN = {
         "/api/v1/users/assign-role",
+        "/api/v1/users/delete",
         "/api/v1/audit-logs",
+        "/api/v1/roles",
     };
 
     @Bean
