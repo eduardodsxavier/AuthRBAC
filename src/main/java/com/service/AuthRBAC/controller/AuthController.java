@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.enums.Action;
-import com.service.AuthRBAC.exception.UserAlreadyExistException;
 import com.service.AuthRBAC.exception.InvalidCredentialsException;
+import com.service.AuthRBAC.exception.InvalidTokenException;
 import com.service.AuthRBAC.dtos.UserInfoDto;
 import com.service.AuthRBAC.dtos.RefreshTokenDto;
 import com.service.AuthRBAC.dtos.TokensDto;
@@ -49,7 +49,7 @@ public class AuthController {
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
             log.save(registerInfo.username(), false, Action.REGISTER);
-            throw new UserAlreadyExistException(e.getMessage());
+            throw new InvalidCredentialsException(e.getMessage());
         }
     }
 
@@ -88,7 +88,7 @@ public class AuthController {
         } catch (Exception e) {
             String username = service.getUsernameByRequest(request);
             log.save(username, false, Action.REFRESH);
-            throw new InvalidCredentialsException(e.getMessage());
+            throw new InvalidTokenException(e.getMessage());
         }
     }
 
@@ -103,7 +103,7 @@ public class AuthController {
         } catch (Exception e) {
             String username = service.getUsernameByRequest(request);
             log.save(username, false, Action.LOG_OUT);
-            throw new InvalidCredentialsException(e.getMessage());
+            throw new InvalidTokenException(e.getMessage());
         }
     }
 }

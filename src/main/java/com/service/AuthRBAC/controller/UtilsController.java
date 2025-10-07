@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.service.AuthRBAC.dtos.LogDto;
 import com.service.AuthRBAC.enums.Role;
+import com.service.AuthRBAC.exception.InvalidTokenException;
 import com.service.AuthRBAC.service.LogService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ public class UtilsController {
         try {
             return service.userAuditLogs(request);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InvalidTokenException(e.getMessage());
         }
     }
 

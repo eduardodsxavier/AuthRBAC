@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-
 @RestControllerAdvice
-public class InvalidRoleAdvice {
+public class InvalidTokenAdvice {
 
-    @ExceptionHandler(InvalidRoleException.class)
+    @ExceptionHandler(InvalidTokenException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String invalidRoleHandler(InvalidRoleException exception) {
+    public String invalidTokenHandler(InvalidTokenException exception) {
         return exception.getMessage();
     }
+    
 }

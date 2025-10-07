@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.awt.Canvas;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.dtos.UserInfoDto;
@@ -21,6 +24,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.service.AuthRBAC.service.LogService;
 import com.service.AuthRBAC.service.UserService;
 import com.service.AuthRBAC.exception.InvalidRoleException;
+import com.service.AuthRBAC.exception.InvalidTokenException;
+import com.service.AuthRBAC.exception.UserNotFoundException;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -34,8 +39,12 @@ public class UsersController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseInfoDto> me(HttpServletRequest request)  {
-        UserResponseInfoDto userInfo = service.UserInformation(request);
-        return new ResponseEntity<>(userInfo, HttpStatus.OK);
+        try {
+            UserResponseInfoDto userInfo = service.UserInformation(request);
+            return new ResponseEntity<>(userInfo, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new InvalidTokenException(e.getMessage());
+        }
     }
 
     @PostMapping("/assign-role")
@@ -58,7 +67,7 @@ public class UsersController {
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InvalidTokenException(e.getMessage());
         }
     }
 
@@ -69,7 +78,7 @@ public class UsersController {
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InvalidTokenException(e.getMessage());
         }
     }
 
@@ -80,7 +89,7 @@ public class UsersController {
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new UserNotFoundException(e.getMessage());
         }
     }
 }

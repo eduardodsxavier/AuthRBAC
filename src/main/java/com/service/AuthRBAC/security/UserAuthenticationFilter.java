@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import com.service.AuthRBAC.repository.TokenBlockListRepository;
 import com.service.AuthRBAC.repository.UsersRepository;
+import com.service.AuthRBAC.exception.InvalidTokenException;
 import com.service.AuthRBAC.model.Users;
 
 import java.io.IOException;
@@ -38,11 +39,11 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filter) throws ServletException, IOException {
         if(endpointNotPublic(request)) {
             String token = service.recoveryToken(request);
-            if (token == null) {throw new RuntimeException("absent token");}
+            if (token == null) {throw new InvalidTokenException("absent token");}
             if (blockListRepository.findById(token).isPresent()) {throw new RuntimeException("token in the blacklist");}
             String subject = service.getSubjectFromToken(token);
             Optional<Users> user = repository.findByName(subject);
-            if (user.isEmpty()) {throw new RuntimeException("invalid token");}
+            if (user.isEmpty()) {throw new InvalidTokenException("invalid token");}
             UserDetailsImpl userDetails = new UserDetailsImpl(user.get());
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
