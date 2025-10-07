@@ -40,7 +40,7 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
         if(endpointNotPublic(request)) {
             String token = service.recoveryToken(request);
             if (token == null) {throw new InvalidTokenException("absent token");}
-            if (blockListRepository.findById(token).isPresent()) {throw new RuntimeException("token in the blacklist");}
+            if (blockListRepository.findById(token).isPresent()) {throw new InvalidTokenException("token in the blacklist");}
             String subject = service.getSubjectFromToken(token);
             Optional<Users> user = repository.findByName(subject);
             if (user.isEmpty()) {throw new InvalidTokenException("invalid token");}

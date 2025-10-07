@@ -49,7 +49,7 @@ public class AuthController {
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
             log.save(registerInfo.username(), false, Action.REGISTER);
-            throw new InvalidCredentialsException(e.getMessage());
+            throw new InvalidCredentialsException();
         }
     }
 
@@ -66,7 +66,7 @@ public class AuthController {
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
         } catch (Exception e) {
             log.save(loginInfo.username(), false, Action.LOGIN);
-            throw new InvalidCredentialsException(e.getMessage());
+            throw new InvalidCredentialsException();
         }
     }
 
