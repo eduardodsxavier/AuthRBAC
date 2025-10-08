@@ -1,5 +1,6 @@
 package com.service.AuthRBAC.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,7 +71,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<AccessTokenDto> refresh(HttpServletResponse response, HttpServletRequest request) {
         try {
             RefreshTokenDto refreshToken = new RefreshTokenDto(service.readRefreshToken(request).get());
@@ -92,7 +93,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         try {
             RefreshTokenDto refreshToken = new RefreshTokenDto(service.readRefreshToken(request).get());

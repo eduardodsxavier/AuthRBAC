@@ -43,11 +43,6 @@ public class UtilsController {
         }
     }
 
-    @GetMapping("/health")
-    public ResponseEntity<Void> health()  {
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @GetMapping("/roles")
     public ResponseEntity<Role[]> roles()  {
         Role[] roles = Role.values();

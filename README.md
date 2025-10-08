@@ -54,7 +54,7 @@ mvn spring-boot:run
 Register (returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/register \
+curl -v -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"alice","password":"P@ssw0rd"}'
 ```
@@ -62,7 +62,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 Login (returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -v -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"alice","password":"P@ssw0rd"}'
 ```
@@ -70,31 +70,40 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 Refresh (send refresh token in cookie returns access + refresh token):
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/refresh \
+curl -v -X POST http://localhost:8080/api/v1/auth/refresh \
   -H "Content-Type: application/json" \
-  --cookie "refreshToken=<token>"
+  --cookie "refreshToken={token}"
 ```
 
 Logout (revoke refresh token):
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/logout \
-  -H "Authorization: Bearer <access-token>"
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  --cookie "refreshToken={token}"
 ```
 
 ---
 
 ## API (summary)
 
-| Method |             Endpoint |    Auth required    | Notes                        |
-| ------ | -------------------: | :-----------------: | ---------------------------- |
-| POST   |     `/auth/register` |          No         | Create user                  |
-| POST   |        `/auth/login` |          No         | Returns access + refresh     |
-| POST   |      `/auth/refresh` | Yes (refresh token) | Requires valid refresh token in cookie |
-| POST   |       `/auth/logout` |         Yes         | Revoke refresh token (Redis) |
-| GET    |          `/users/me` |         Yes         | Access token required        |
-| POST   | `/users/assign-role` |         Yes         | `admin` only                 |
-| GET    |  `/admin/audit-logs` |         Yes         | `admin` only                 |
+| **Method** | **Endpoint**                      | **Auth Required**   | **Description**                                                        |
+| ---------- | --------------------------------- | ------------------- | ---------------------------------------------------------------------- |
+| **POST**   | `/api/v1/auth/register`           | No                  | Register a new user.                                                   |
+| **POST**   | `/api/v1/auth/login`              | No                  | Authenticate user and return access + refresh tokens.                  |
+| **GET**    | `/actuator/health`                | No                  | Check server health status.                                            |
+| **GET**    | `/api/v1/auth/refresh`            | Yes (Refresh Token) | Generate a new access token using a valid refresh token (from cookie). |
+| **GET**    | `/api/v1/auth/logout`             | Yes                 | Revoke user refresh token (stored in Redis).                           |
+| **GET**    | `/api/v1/users/me`                | Yes                 | Retrieve the currently authenticated user.                             |
+| **PUT**    | `/api/v1/users/update`            | Yes                 | Update user profile information.                                       |
+| **DELETE** | `/api/v1/users/delete/me`         | Yes                 | Delete the currently authenticated user.                               |
+| **GET**    | `/api/v1/audit-logs/me`           | Yes                 | Get the audit logs for the current user.                               |
+| **DELETE** | `/api/v1/users/delete/{username}` | Yes (`admin` only)  | Delete a specific user by username.                                    |
+| **POST**   | `/api/v1/users/assign-role`       | Yes (`admin` only)  | Assign a role to a user.                                               |
+| **GET**    | `/api/v1/audit-logs`              | Yes (`admin` only)  | Retrieve all audit logs.                                               |
+| **GET**    | `/api/v1/roles`                   | Yes (`admin` only)  | List all available roles.                                              |
+
 
 ---
 
