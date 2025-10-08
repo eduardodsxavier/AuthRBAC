@@ -82,7 +82,7 @@ public class AuthService {
             blockListRepository.save(new BlockToken(allowToken.accessToken(), user.id(), Duration.ofMinutes(15).toSeconds()));
             allowListRepository.delete(allowToken);
 
-            throw new InvalidCredentialsException("token security fault");
+            throw new InvalidCredentialsException();
         }
 
         AllowToken allowToken = allowListRepository.findById(refreshToken.refreshToken()).get();
