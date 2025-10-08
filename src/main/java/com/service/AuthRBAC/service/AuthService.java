@@ -120,4 +120,13 @@ public class AuthService {
         AllowToken allowToken = allowListRepository.findById(token).get();
         return usersRepository.findById(allowToken.userId()).get().name();
     }
+
+    public Cookie generateCookie(TokensDto token) {
+        Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge((int) Duration.ofDays(7).toSeconds());
+        return cookie;
+
+    }
 }

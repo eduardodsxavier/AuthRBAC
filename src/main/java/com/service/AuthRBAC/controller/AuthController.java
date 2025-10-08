@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.service.AuthRBAC.enums.Action;
@@ -42,9 +45,7 @@ public class AuthController {
         try {
             TokensDto token = service.register(registerInfo);
 
-            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+            response.addCookie(service.generateCookie(token));
 
             log.save(registerInfo.username(), true, Action.REGISTER);
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
@@ -59,9 +60,7 @@ public class AuthController {
         try {
             TokensDto token = service.authenticate(loginInfo);
 
-            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+            response.addCookie(service.generateCookie(token));
 
             log.save(loginInfo.username(), true, Action.LOGIN);
             return new ResponseEntity<>(new AccessTokenDto(token.AccessToken()), HttpStatus.OK);
@@ -78,9 +77,7 @@ public class AuthController {
 
             TokensDto token = service.refresh(refreshToken);
 
-            Cookie cookie = new Cookie("refreshToken", token.RefreshToken());
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
+            response.addCookie(service.generateCookie(token));
 
             String username = jwt.getSubjectFromToken(token.AccessToken());
 

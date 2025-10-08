@@ -117,16 +117,3 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 * Implement token rotation and short access token lifetimes.
 
 ---
-
-## Roadmap / TODOs
-
-* [ ] Add comprehensive unit & integration tests
-* [ ] Configure GitHub Actions (CI)
-* [ ] Add logging/structured logs + correlation IDs
-* [ ] Harden environment secret management
-* [ ] Provide Postman collection / example OpenAPI client
-* [ ] docker compose
-* [ ] elasticsearch
-* [ ] prometheus
-* [ ] grafana
-* [ ] swagger
