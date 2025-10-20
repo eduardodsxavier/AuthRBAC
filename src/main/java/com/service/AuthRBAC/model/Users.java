@@ -80,4 +80,8 @@ public class Users {
     public boolean enabled() {
         return enabled;
     }
+
+    public boolean validatePassword(String password) {
+        return password.matches("^(?=.*\\d)(?=.*[A-Z])(?=.*[a-z]).{8,}$");
+    }
 }

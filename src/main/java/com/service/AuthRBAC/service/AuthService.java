@@ -47,7 +47,7 @@ public class AuthService {
     private JwtService jwtService;
 
     public TokensDto authenticate(UserInfoDto loginInfo) {
-        UsernamePasswordAuthenticationToken userAuthenticationToken = new UsernamePasswordAuthenticationToken(loginInfo.username(), loginInfo.password());
+        UsernamePasswordAuthenticationToken userAuthenticationToken = new UsernamePasswordAuthenticationToken(loginInfo.username().trim(), loginInfo.password().trim());
 
         Authentication authentication = manager.authenticate(userAuthenticationToken); 
 
@@ -63,8 +63,11 @@ public class AuthService {
 
     public TokensDto register(UserInfoDto registerInfo) {
         Users user = new Users();
-        user.setName(registerInfo.username());
-        user.setPassword(registerInfo.password());
+        if (user.validatePassword(registerInfo.password().trim())) {
+            throw new InvalidCredentialsException();
+        }
+        user.setName(registerInfo.username().trim());
+        user.setPassword(registerInfo.password().trim());
         user.setRole(Role.admin);
         user.setEnabled(true);
         
